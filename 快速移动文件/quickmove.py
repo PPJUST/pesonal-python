@@ -140,8 +140,6 @@ class Quickmove:
                 self.folders.append(total_path)
             else:
                 self.files.append(total_path)
-        self.files = natsorted(self.files)   # 使用natsorted排序，这和Windows默认排序相同，sort排序则会不一样
-        self.folders = natsorted(self.folders)
         # 下面代码创建字典，文件名与其大写文件名对应，排序后再变回去，去除大小写影响
         files_dict = {}
         files_upper = []
