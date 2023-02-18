@@ -8,6 +8,7 @@ import datetime
 import sys
 import shutil
 from natsort import natsorted
+from pypinyin import lazy_pinyin
 
 
 class Quickmove:
@@ -141,6 +142,29 @@ class Quickmove:
                 self.files.append(total_path)
         self.files = natsorted(self.files)   # 使用natsorted排序，这和Windows默认排序相同，sort排序则会不一样
         self.folders = natsorted(self.folders)
+        # 下面代码创建字典，文件名与其大写文件名对应，排序后再变回去，去除大小写影响
+        files_dict = {}
+        files_upper = []
+        files_reup = []
+        for i in self.files:
+            files_dict["".join(lazy_pinyin(i.upper()))] = i     # 先全转大写，在利用pypinyin将汉字转拼音并连接起来
+            files_upper.append("".join(lazy_pinyin(i.upper()))) # 将转换后的结果放到一个单独的列表
+        files_upper = natsorted(files_upper)   # 使用natsorted对新列表排序，这和Windows默认排序相同，sort排序则会不一样
+        for y in files_upper:
+            files_reup.append(files_dict[y])    # 最后将新排序列表的key值和value值对应起来，得到Windows默认排序的列表
+        self.files = files_reup
+
+        folders_dict = {}
+        folders_upper = []
+        folders_reup = []
+        for i in self.folders:
+            folders_dict["".join(lazy_pinyin(i.upper()))] = i
+            folders_upper.append("".join(lazy_pinyin(i.upper())))
+        folders_upper = natsorted(folders_upper)  # 使用natsorted排序，这和Windows默认排序相同，sort排序则会不一样
+        for y in folders_upper:
+            folders_reup.append(folders_dict[y])
+        self.folders = folders_reup
+
         # 确认要移动的文件类型
         if self.select_model == "文件模式":
             need_moves = self.files
