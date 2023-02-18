@@ -37,6 +37,7 @@ class DoujinshiRename:
         self.ui.button_quit.clicked.connect(self.quit_botton)
         self.ui.button_start.clicked.connect(self.start_standard)
         self.ui.button_update_config.clicked.connect(self.update_config)
+        self.ui.text_info.textChanged.connect(self.scroll)
 
 
     def read_config(self):
@@ -323,6 +324,10 @@ class DoujinshiRename:
 
     def quit_botton(self):
         sys.exit(1)
+
+    def scroll(self):
+        """文本框下拉到底"""
+        self.ui.text_info.verticalScrollBar().setValue(self.ui.text_info.verticalScrollBar().maximum())
 
 
 def main():
