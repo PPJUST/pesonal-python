@@ -55,6 +55,13 @@
           </layout>
          </item>
          <item>
+          <widget class="QCheckBox" name="check_box_open_next">
+           <property name="text">
+            <string>是否自动打开下一个文件</string>
+           </property>
+          </widget>
+         </item>
+         <item>
           <layout class="QHBoxLayout" name="horizontalLayout_2">
            <item>
             <widget class="QLabel" name="label_2">
@@ -338,6 +345,13 @@
         </widget>
        </item>
       </layout>
+     </item>
+     <item>
+      <widget class="QPushButton" name="button_open_old">
+       <property name="text">
+        <string>打开文件夹</string>
+       </property>
+      </widget>
      </item>
      <item>
       <widget class="QPushButton" name="button_quit">
