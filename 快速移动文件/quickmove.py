@@ -51,7 +51,8 @@ class Quickmove:
         self.ui.button_move_4.clicked.connect(self.move_4)
         self.ui.button_move_5.clicked.connect(self.move_5)
         self.ui.button_quit.clicked.connect(self.quit_button)
-
+        self.ui.button_open_old.clicked.connect(self.open_old)
+        self.ui.text_info.textChanged.connect(self.scroll)
         # 每次文本行有变动则更新配置文件
         self.ui.line_edit_path_old.textChanged.connect(self.config_save)
         self.ui.line_edit_path_move_1.textChanged.connect(self.config_save)
@@ -189,68 +190,41 @@ class Quickmove:
 
     def move_1(self):
         """移动到文件夹"""
-        with open("configf.json", "r", encoding="utf-8") as fr:
-            line = fr.readlines()
-        move_number_max = len(line)     # 确认需要移动的总文件数量
-        if self.move_number + 1 > move_number_max:      # 确认移动到第几个文件了，是否超限了
-            tkinter.messagebox.showwarning(title='注意', message='已完成全部文件的移动，点击确认将重新遍历文件')
-        else:
-            shutil.move(line[self.move_number].strip(), self.paths["path_move_1"])      # 利用shutil移动文件
-            self.move_number += 1
-            self.ui.label_show_file.setText(line[self.move_number])
-        self.ui.text_info.insertPlainText("\n" + self.get_time() + "完成文件移动：" + line[self.move_number].strip() + " >>> " + self.paths["path_move_1"])
+        self.strat_move("path_move_1")
 
     def move_2(self):
         """移动到文件夹"""
-        with open("configf.json", "r", encoding="utf-8") as fr:
-            line = fr.readlines()
-        move_number_max = len(line)     # 确认需要移动的总文件数量
-        if self.move_number + 1 > move_number_max:      # 确认移动到第几个文件了，是否超限了
-            tkinter.messagebox.showwarning(title='注意', message='已完成全部文件的移动，点击确认将重新遍历文件')
-        else:
-            shutil.move(line[self.move_number].strip(), self.paths["path_move_2"])
-            self.move_number += 1
-            self.ui.label_show_file.setText(line[self.move_number])
-        self.ui.text_info.insertPlainText("\n" + self.get_time() + "完成文件移动：" + line[self.move_number].strip() + " >>> " + self.paths["path_move_2"])
+        self.strat_move("path_move_2")
 
     def move_3(self):
         """移动到文件夹"""
-        with open("configf.json", "r", encoding="utf-8") as fr:
-            line = fr.readlines()
-        move_number_max = len(line)     # 确认需要移动的总文件数量
-        if self.move_number + 1 > move_number_max:      # 确认移动到第几个文件了，是否超限了
-            tkinter.messagebox.showwarning(title='注意', message='已完成全部文件的移动，点击确认将重新遍历文件')
-        else:
-            shutil.move(line[self.move_number].strip(), self.paths["path_move_3"])
-            self.move_number += 1
-            self.ui.label_show_file.setText(line[self.move_number])
-        self.ui.text_info.insertPlainText("\n" + self.get_time() + "完成文件移动：" + line[self.move_number].strip() + " >>> " + self.paths["path_move_3"])
+        self.strat_move("path_move_3")
 
     def move_4(self):
         """移动到文件夹"""
-        with open("configf.json", "r", encoding="utf-8") as fr:
-            line = fr.readlines()
-        move_number_max = len(line)     # 确认需要移动的总文件数量
-        if self.move_number + 1 > move_number_max:      # 确认移动到第几个文件了，是否超限了
-            tkinter.messagebox.showwarning(title='注意', message='已完成全部文件的移动，点击确认将重新遍历文件')
-        else:
-            shutil.move(line[self.move_number].strip(), self.paths["path_move_4"])
-            self.move_number += 1
-            self.ui.label_show_file.setText(line[self.move_number])
-        self.ui.text_info.insertPlainText("\n" + self.get_time() + "完成文件移动：" + line[self.move_number].strip() + " >>> " + self.paths["path_move_4"])
+        self.strat_move("path_move_4")
 
     def move_5(self):
         """移动到文件夹"""
+        self.strat_move("path_move_5")
+
+    def strat_move(self, path_move_number):
+        """移动文件夹操作，需要一个目标文件夹路径的变量"""
         with open("configf.json", "r", encoding="utf-8") as fr:
             line = fr.readlines()
-        move_number_max = len(line)     # 确认需要移动的总文件数量
-        if self.move_number + 1 > move_number_max:      # 确认移动到第几个文件了，是否超限了
+        move_number_max = len(line)  # 确认需要移动的总文件数量
+        if self.move_number + 1 > move_number_max:  # 确认移动到第几个文件了，是否超限了
             tkinter.messagebox.showwarning(title='注意', message='已完成全部文件的移动，点击确认将重新遍历文件')
         else:
-            shutil.move(line[self.move_number].strip(), self.paths["path_move_5"])
+            shutil.move(line[self.move_number].strip(), self.paths[path_move_number])
             self.move_number += 1
             self.ui.label_show_file.setText(line[self.move_number])
-        self.ui.text_info.insertPlainText("\n" + self.get_time() + "完成文件移动：" + line[self.move_number].strip() + " >>> " + self.paths["path_move_5"])
+        self.ui.text_info.insertPlainText(
+            "\n" * 2 + self.get_time() + "完成文件移动： " + line[self.move_number - 1].strip() + " >>> " + self.paths[
+                path_move_number])
+        # 是否自动打开下一个文件
+        if self.ui.check_box_open_next.isChecked() == True: # 检查勾选框状态
+            os.startfile(line[self.move_number].strip())
 
     def get_time(self):
         """获取当前时间"""
@@ -259,6 +233,15 @@ class Quickmove:
 
     def quit_button(self):
         sys.exit(1)
+
+    def open_old(self):
+        """打开源文件夹"""
+        os.startfile(self.paths["path_old"])
+
+    def scroll(self):
+        """文本框下拉到底"""
+        self.ui.text_info.verticalScrollBar().setValue(self.ui.text_info.verticalScrollBar().maximum())
+
 
 def main():
     app = QApplication()
