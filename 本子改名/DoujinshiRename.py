@@ -296,6 +296,13 @@ class DoujinshiRename:
 
     def start_standard(self):
         """正式执行改名操作"""
+        # 改名前先备份一次测试文件
+        import shutil
+        newname = "改名测试 " + str(datetime.datetime.now())[:-7].replace(':', '.') + ".xlsx"
+        p = os.getcwd() # 获取当前路径
+        shutil.copy2("改名测试.xlsx", p + "\\config_backup\\" + newname)     # 调用shutil模块的方法复制文件
+        self.ui.text_info.insertPlainText("\n" + self.get_time() + "已备份测试文件")
+
         n = 0  # 用于统计改名操作的次数
         wb = load_workbook("改名测试.xlsx")
         ws = wb.active
