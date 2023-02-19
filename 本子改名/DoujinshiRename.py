@@ -38,7 +38,7 @@ class DoujinshiRename:
         self.ui.button_start.clicked.connect(self.start_standard)
         self.ui.button_update_config.clicked.connect(self.update_config)
         self.ui.text_info.textChanged.connect(self.scroll)
-
+        self.ui.button_back.clicked.connect(self.back_standard)
 
     def read_config(self):
         """读取配置文件，分配类"""
@@ -262,22 +262,10 @@ class DoujinshiRename:
             ai = "A" + str(i)
             filename_oringinal = ws[ai].value  # 赋值于变量，用于后续操作
             self.assort(filename_oringinal)  # 执行模块2进行分类
-            ws["B1"] = "标准化文件名"  # 添加标题
-            ws["C1"] = "即卖会名"
-            ws["D1"] = "原作名"
-            ws["E1"] = "汉化"
-            ws["F1"] = "其他信息"
-            bi = "B" + str(i)  # 建立单元格编号
-            ci = "C" + str(i)
-            di = "D" + str(i)
-            ei = "E" + str(i)
-            fi = "F" + str(i)
+            ws["B1"], ws["C1"], ws["D1"], ws["E1"], ws["F1"] = "标准化文件名", "即卖会名", "原作名", "汉化", "其他信息"    # 添加标题
+            bi, ci, di, ei, fi = "B" + str(i), "C" + str(i), "D" + str(i), "E" + str(i), "F" + str(i)    # 建立单元格编号
             if filename_oringinal == self.filename_standard:  # 如果新文件名和原文件名相同，清空数据
-                ws[bi] = ""
-                ws[ci] = ""
-                ws[di] = ""
-                ws[ei] = ""
-                ws[fi] = ""
+                ws[bi], ws[ci], ws[di], ws[ei], ws[fi] = "", "", "", "", ""
             else:  # 如果不同，则写入数据
                 ws[bi] = self.filename_standard
                 ws[ci] = ",".join(self.item_market)
@@ -313,9 +301,25 @@ class DoujinshiRename:
             bi = "B" + str(i)
             if ws[bi].value:  # 判断新文件名是否为空，不为空则执行改名
                 os.rename(self.path + "/" + ws[ai].value, self.path + "/" + ws[bi].value)
-                self.ui.text_info.insertPlainText("\n"*2 + self.get_time() + "执行改名：" + ws[ai].value + " >>> " + ws[bi].value)
+                self.ui.text_info.insertPlainText("\n"*2 + self.get_time() + "执行改名： " + ws[ai].value + " >>> " + ws[bi].value)
                 n += 1  # 统计操作次数
         self.ui.text_info.insertPlainText("\n"*2 + self.get_time() + "已完成全部改名操作，共执行" + str(n) + "次")
+
+    def back_standard(self):
+        """撤销改名"""
+        n = 0  # 用于统计改名操作的次数
+        wb = load_workbook("改名测试.xlsx")
+        ws = wb.active
+        max_row = ws.max_row  # 获取最大行数
+        for i in range(2, max_row + 2):
+            ai = "A" + str(i)
+            bi = "B" + str(i)
+            if ws[bi].value:  # 判断新文件名是否为空，不为空则执行改名
+                os.rename(self.path + "/" + ws[bi].value, self.path + "/" + ws[ai].value)
+                self.ui.text_info.insertPlainText(
+                    "\n" * 2 + self.get_time() + "撤回改名： " + ws[bi].value + " >>> " + ws[ai].value)
+                n += 1  # 统计操作次数
+        self.ui.text_info.insertPlainText("\n" * 2 + self.get_time() + "已撤回改名，共执行" + str(n) + "次")
 
     def open_check(self):
         """打开测试文件"""
@@ -332,6 +336,7 @@ class DoujinshiRename:
 
 def main():
     app = QApplication()
+    #app.setStyle('Fusion')
     doujinshirename = DoujinshiRename()
     doujinshirename.ui.show()
     app.exec_()
