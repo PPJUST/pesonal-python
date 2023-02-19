@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>685</width>
+    <width>684</width>
     <height>610</height>
    </rect>
   </property>
@@ -23,7 +23,7 @@
          <bool>true</bool>
         </property>
         <property name="currentIndex">
-         <number>3</number>
+         <number>0</number>
         </property>
         <widget class="QWidget" name="tab_market">
          <attribute name="title">
@@ -170,16 +170,15 @@ p, li { white-space: pre-wrap; }
           <item>
            <layout class="QVBoxLayout" name="verticalLayout_2">
             <item>
-             <widget class="QPushButton" name="button_reptile_market">
-              <property name="text">
-               <string>*爬取即卖会名</string>
+             <widget class="QPushButton" name="button_spiders_original">
+              <property name="minimumSize">
+               <size>
+                <width>0</width>
+                <height>40</height>
+               </size>
               </property>
-             </widget>
-            </item>
-            <item>
-             <widget class="QPushButton" name="button_reptile_original">
               <property name="text">
-               <string>*爬取原作名</string>
+               <string>爬取原作名</string>
               </property>
              </widget>
             </item>
@@ -226,6 +225,12 @@ p, li { white-space: pre-wrap; }
           </item>
           <item>
            <widget class="QPushButton" name="button_open_help">
+            <property name="minimumSize">
+             <size>
+              <width>0</width>
+              <height>40</height>
+             </size>
+            </property>
             <property name="text">
              <string>打开说明文件</string>
             </property>
