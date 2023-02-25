@@ -54,7 +54,6 @@ class DoujinshiRename:
                 if line.split():
                     cw.write(line)
 
-        config_all = []  # 设置个空列表
         with open("config.json", encoding="utf-8") as cj:
             config_all = cj.read().splitlines()
             line_row = 0    # 设置行，确定匹配到的关键词在第几行
@@ -91,7 +90,7 @@ class DoujinshiRename:
         """更新配置文件"""
         import shutil
         newname = "config_backup " + str(datetime.datetime.now())[:-7].replace(':', '.') + ".json"
-        p = os.getcwd() # 获取当前路径
+        p = os.getcwd()  # 获取当前路径
         shutil.copy2("config.json", p + "\\config_backup\\" + newname)     # 调用shutil模块的方法复制文件
         self.ui.text_info.insertPlainText("\n" + self.get_time() + "已备份配置文件")
 
@@ -218,7 +217,7 @@ class DoujinshiRename:
                 filename_usetorecomb = filename_usetorecomb[:-5] + filename_usetorecomb[-5:].replace(" .", ".")  # 切片替换 .去除多余空格
 
         # 对照标准化文件名格式，对文件名进行元素的删改
-        if zip_check == True:
+        if zip_check:
             filename_usetorecomb_delzip = os.path.splitext(filename_usetorecomb)[0]    # splitext分离后缀
             filename_usetorecomb_suffix = os.path.splitext(filename_usetorecomb)[1]    # splitext提取后缀
             for i in self.standard_model:
@@ -299,7 +298,7 @@ class DoujinshiRename:
         # 改名前先备份一次测试文件
         import shutil
         newname = "改名测试 " + str(datetime.datetime.now())[:-7].replace(':', '.') + ".xlsx"
-        p = os.getcwd() # 获取当前路径
+        p = os.getcwd()  # 获取当前路径
         shutil.copy2("改名测试.xlsx", p + "\\config_backup\\" + newname)     # 调用shutil模块的方法复制文件
         self.ui.text_info.insertPlainText("\n" + self.get_time() + "已备份测试文件")
 
@@ -406,14 +405,14 @@ class DoujinshiRename:
             "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_5) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/13.1 Safari/605.1.15"
         ]
         for page in range(min_page, max_page + 1):  # 设置for循环
-            htmls = []  # 设置空列表，存放爬取的全部网页内容
             self.ui.text_info.insertPlainText("\n" * 2 + self.get_time() + "正在爬取第" + str(page) + "页")
             url = f'https://bangumi.tv/anime/browser?page={page}'  # 设置url
             response = requests.get(url, headers={'User-Agent': random.choice(user_agents)})
             response.encoding = "utf-8"
-            if response.status_code == 200:  # 检查状态码
-                content = response.text
-            htmls = content.split("\n")  # 将爬虫结果用换行符分割为列表
+            # if response.status_code == 200:  # 检查状态码
+            #    content = response.text
+            # htmls = content.split("\n")  # 将爬虫结果用换行符分割为列表
+            htmls = response.text.split("\n")  # 将爬虫结果用换行符分割为列表
             self.ui.text_info.insertPlainText("\n" * 2 + self.get_time() + "完成第" + str(page) + "页的爬取")
             # 进行正则操作
             results = []  # 设置空列表来存放最终原作名
@@ -428,22 +427,25 @@ class DoujinshiRename:
                     except AttributeError:
                         pass
             # 替换Windows文件名不能出现的字符
+            newresults = []
             for i in results:
-                results.remove(i)
                 newi = i.replace("/", " ")  # 替换Windows文件名不能出现的/
-                results.append(newi)
+                newresults.append(newi)
+            results = newresults
             # 检查原作名长度，如果过短则添加括号防止匹配错误
             results_check = []  # 检查文件长度的空列表
             for i in results:
-                if len(str(i)) <= 8:
-                    results.remove(i)
-                    results_check.append("(" + i + ")")
-            results += results_check
-            with open("原作爬取结果.txt", "a", encoding="utf-8") as rw:
-                for i in results:
-                    rw.write(i + "\n")
-            self.ui.text_info.insertPlainText("\n" + self.get_time() + "已将结果写入文件，等待5秒后开始下一次爬取")
-            time.sleep(5)
+                if len(str(i)) <= 6:
+                    results_check.append("(" + str(i) + ")")
+                else:
+                    results_check.append(i)
+            results = results_check
+            rw = open("原作爬取结果.txt", "a", encoding="utf-8")
+            for i in results:
+                rw.write(i + "\n")
+            rw.close()
+            self.ui.text_info.insertPlainText("\n" + self.get_time() + "已将结果写入文件，等待下一次爬取")
+            time.sleep(random.randint(1, 5))
         self.ui.text_info.insertPlainText("\n" + self.get_time() + "完成全部爬取")
 
 
@@ -456,3 +458,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+    
