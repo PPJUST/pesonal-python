@@ -183,25 +183,29 @@ class DoujinshiRename:
         # 判断括号元素是否包含关键词：即卖会名
         for line in self.config_market:
             for ele in self.filename_inbrac:
-                if ele.find(line) != -1:  # find()方法不为-1说明匹配成功
+                if re.search(line, ele, flags=re.IGNORECASE) != None:   # re.search正则添加参数实现忽略大小写匹配
+                # if ele.find(line) != -1:  # find()方法不为-1说明匹配成功
                     self.item_market.append(ele)  # 将匹配成功的元素转移到对应变量
                     self.filename_inbrac.remove(ele)  # 删除已转移的括号内容
         # 判断括号元素是否包含关键词：原作名
         for line in self.config_original:  # 判断括号元素是否包含关键词：即卖会名
             for ele in self.filename_inbrac:
-                if ele.find(line) != -1:  # find()方法不为-1说明匹配成功
+                if re.search(line, ele, flags=re.IGNORECASE) != None:  # re.search正则添加参数实现忽略大小写匹配
+                # if ele.find(line) != -1:  # find()方法不为-1说明匹配成功
                     self.item_original.append(ele)  # 将匹配成功的元素转移到对应变量
                     self.filename_inbrac.remove(ele)  # 删除已转移的括号内容
         # 判断括号元素是否包含关键词：汉化组
         for line in self.config_localization:  # 判断括号元素是否包含关键词：即卖会名
             for ele in self.filename_inbrac:
-                if ele.find(line) != -1:  # find()方法不为-1说明匹配成功
+                if re.search(line, ele, flags=re.IGNORECASE) != None:  # re.search正则添加参数实现忽略大小写匹配
+                # if ele.find(line) != -1:  # find()方法不为-1说明匹配成功
                     self.item_localization.append(ele)  # 将匹配成功的元素转移到对应变量
                     self.filename_inbrac.remove(ele)  # 删除已转移的括号内容
         # 判断括号元素是否包含关键词：其他信息
         for line in self.config_other:  # 判断括号元素是否包含关键词：即卖会名
             for ele in self.filename_inbrac:
-                if ele.find(line) != -1:  # find()方法不为-1说明匹配成功
+                if re.search(line, ele, flags=re.IGNORECASE) != None:  # re.search正则添加参数实现忽略大小写匹配
+                # if ele.find(line) != -1:  # find()方法不为-1说明匹配成功
                     self.item_other.append(ele)  # 将匹配成功的元素转移到对应变量
                     self.filename_inbrac.remove(ele)  # 删除已转移的括号内容
 
