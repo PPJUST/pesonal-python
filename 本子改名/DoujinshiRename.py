@@ -51,15 +51,17 @@ class DoujinshiRename:
             crr = cr.readlines()
         with open("config.json", "w", encoding="utf-8") as cw:
             for line in crr:
+                line = line.replace("/", " ")      # 替换文件名不能出现的/和*
+                line = line.replace("*", " ")
                 if line.split():
                     cw.write(line)
 
         with open("config.json", encoding="utf-8") as cj:
             config_all = cj.read().splitlines()
-            line_row = 0    # 设置行，确定匹配到的关键词在第几行
+            line_row = 0  # 设置行，确定匹配到的关键词在第几行
             key_model, key_market, key_original, key_localization, key_other = 0, 0, 0, 0, 0
             for line in config_all:
-                line_row += 1   # 每次循环+1行
+                line_row += 1  # 每次循环+1行
                 if line == "#model\n":
                     key_model = line_row
                 if line == "#market":
@@ -70,8 +72,8 @@ class DoujinshiRename:
                     key_localization = line_row
                 if line == "#other":
                     key_other = line_row
-            self.config_model = config_all[key_model+1:key_market-1]
-            self.config_market = list(tuple(config_all[key_market:key_original - 1]))   # 先转元组再转列表，完成去重
+            self.config_model = config_all[key_model + 1:key_market - 1]
+            self.config_market = list(tuple(config_all[key_market:key_original - 1]))  # 先转元组再转列表，完成去重
             self.config_original = list(tuple(config_all[key_original:key_localization - 1]))
             self.config_localization = list(tuple(config_all[key_localization:key_other - 1]))
             self.config_other = list(tuple(config_all[key_other:]))
@@ -80,7 +82,7 @@ class DoujinshiRename:
     def show_config(self):
         """显示配置文件中的关键词"""
         self.ui.line_edit_model.setText("".join(self.config_model))
-        self.ui.text_edit_market.setText("\n".join(self.config_market))     # setText + \n.join组合列表完成多行显示列表中的元素
+        self.ui.text_edit_market.setText("\n".join(self.config_market))  # setText + \n.join组合列表完成多行显示列表中的元素
         self.ui.text_edit_original.setText("\n".join(self.config_original))
         self.ui.text_edit_localization.setText("\n".join(self.config_localization))
         self.ui.text_edit_other.setText("\n".join(self.config_other))
@@ -91,21 +93,21 @@ class DoujinshiRename:
         import shutil
         newname = "config_backup " + str(datetime.datetime.now())[:-7].replace(':', '.') + ".json"
         p = os.getcwd()  # 获取当前路径
-        shutil.copy2("config.json", p + "\\config_backup\\" + newname)     # 调用shutil模块的方法复制文件
+        shutil.copy2("config.json", p + "\\config_backup\\" + newname)  # 调用shutil模块的方法复制文件
         self.ui.text_info.insertPlainText("\n" + self.get_time() + "已备份配置文件")
 
         # 设置临时变量，用于临时存放新的关键词（显示在文本框里的文本）
         new_config_model = self.ui.line_edit_model.text().split()
-        new_config_market = self.ui.text_edit_market.toPlainText().split("\n")      # 先读取文本，然后split+换行符组成正常的列表
+        new_config_market = self.ui.text_edit_market.toPlainText().split("\n")  # 先读取文本，然后split+换行符组成正常的列表
         new_config_original = self.ui.text_edit_original.toPlainText().split("\n")
         new_config_localization = self.ui.text_edit_localization.toPlainText().split("\n")
         new_config_other = self.ui.text_edit_other.toPlainText().split("\n")
-        with open("config.json", "w", encoding="utf-8") as cw:      # 打开文件，重新写入5组关键词
+        with open("config.json", "w", encoding="utf-8") as cw:  # 打开文件，重新写入5组关键词
             new_config = ["#model"] + new_config_model + \
                          ["#market"] + list(set(new_config_market)) + \
                          ["#original"] + list(set(new_config_original)) + \
                          ["#localization"] + list(set(new_config_localization)) + \
-                         ["#other"] + list(set(new_config_other))     # 转集合再转列表完成去重，然后重组全部的关键词
+                         ["#other"] + list(set(new_config_other))  # 转集合再转列表完成去重，然后重组全部的关键词
             for line in new_config:
                 cw.write(line + "\n")
         self.ui.text_info.insertPlainText("\n" + self.get_time() + "已更新配置文件")
@@ -137,6 +139,7 @@ class DoujinshiRename:
     """改名主逻辑代码"""
     """模块1
     新建xlsx >>> 遍历文件名 >>> 保存到xlsx"""
+
     def xlsx_create(self):
         """新建工作簿并且写入原文件名"""
         wb = Workbook()
@@ -157,73 +160,71 @@ class DoujinshiRename:
     区分括号内外元素 >>> 
     括号内元素 >>> 匹配txt中的关键词进行分类
     括号外元素 >>> 判断是压缩包还是文件夹 >>> 去除文件两端多余空格"""
+
     def assort(self, input_filename):
         """文件名内元素分类"""
         # 先在函数内初始化要用的变量
-        self.filename_standard = ""    # 标准化后的文件名
+        self.filename_standard = ""  # 标准化后的文件名
         self.filename_inbrac = []  # 用于存放括号里的内容
         self.filename_outbrac = ""  # 用于存放括号外的内容
         self.item_market = []  # 分类：即卖会名
         self.item_original = []  # 分类：原作名
         self.item_localization = []  # 分类：汉化组
         self.item_other = []  # 分类：其他信息
-        self.standard_model = self.ui.line_edit_model.text().split("@")    # 切割关键词组成模型
+        self.standard_model = self.ui.line_edit_model.text().split("@")  # 切割关键词组成模型
         filename_usetomod = input_filename
 
         # 尝试区分压缩包
         zip_check = False
-        if os.path.splitext(filename_usetomod)[1].upper() in ['.ZIP', '.RAR', '.7Z']:    # 分割文件名后转大写，然后找压缩包后缀
+        if os.path.splitext(filename_usetomod)[1].upper() in ['.ZIP', '.RAR', '.7Z']:  # 分割文件名后转大写，然后找压缩包后缀
             zip_check = True
 
         # 区分括号内外元素
-        self.filename_inbrac.extend(re.findall(r"\[.*?\]|\(.*?\)|（.*?）|【.*?】", filename_usetomod))  # 正则提取括号内容，extend拼接列表
+        self.filename_inbrac.extend(
+            re.findall(r"\[.*?\]|\(.*?\)|（.*?）|【.*?】", filename_usetomod))  # 正则提取括号内容，extend拼接列表
         self.filename_outbrac = re.sub(r"\[.*?\]|\(.*?\)|（.*?）|【.*?】", "", filename_usetomod)  # 正则删除括号内容
 
         # 分类括号内容
-        # 判断括号元素是否包含关键词：即卖会名
-        for line in self.config_market:
+        for line in self.config_market:        # 判断括号元素是否包含关键词：即卖会名
             for ele in self.filename_inbrac:
-                if re.search(line, ele, flags=re.IGNORECASE) != None:   # re.search正则添加参数实现忽略大小写匹配
-                # if ele.find(line) != -1:  # find()方法不为-1说明匹配成功
+                if ele.upper().find(line.upper()) != -1:  # find()方法不为-1说明匹配成功
                     self.item_market.append(ele)  # 将匹配成功的元素转移到对应变量
                     self.filename_inbrac.remove(ele)  # 删除已转移的括号内容
         # 判断括号元素是否包含关键词：原作名
-        for line in self.config_original:  # 判断括号元素是否包含关键词：即卖会名
+        for line in self.config_original:  # 判断括号元素是否包含关键词：原作
             for ele in self.filename_inbrac:
-                if re.search(line, ele, flags=re.IGNORECASE) != None:  # re.search正则添加参数实现忽略大小写匹配
-                # if ele.find(line) != -1:  # find()方法不为-1说明匹配成功
+                 if ele.upper().find(line.upper()) != -1:  # find()方法不为-1说明匹配成功
                     self.item_original.append(ele)  # 将匹配成功的元素转移到对应变量
                     self.filename_inbrac.remove(ele)  # 删除已转移的括号内容
         # 判断括号元素是否包含关键词：汉化组
-        for line in self.config_localization:  # 判断括号元素是否包含关键词：即卖会名
+        for line in self.config_localization:  # 判断括号元素是否包含关键词：汉化
             for ele in self.filename_inbrac:
-                if re.search(line, ele, flags=re.IGNORECASE) != None:  # re.search正则添加参数实现忽略大小写匹配
-                # if ele.find(line) != -1:  # find()方法不为-1说明匹配成功
+                if ele.upper().find(line.upper()) != -1:  # find()方法不为-1说明匹配成功
                     self.item_localization.append(ele)  # 将匹配成功的元素转移到对应变量
                     self.filename_inbrac.remove(ele)  # 删除已转移的括号内容
         # 判断括号元素是否包含关键词：其他信息
-        for line in self.config_other:  # 判断括号元素是否包含关键词：即卖会名
+        for line in self.config_other:  # 判断括号元素是否包含关键词：其他
             for ele in self.filename_inbrac:
-                if re.search(line, ele, flags=re.IGNORECASE) != None:  # re.search正则添加参数实现忽略大小写匹配
-                # if ele.find(line) != -1:  # find()方法不为-1说明匹配成功
+                 if ele.upper().find(line.upper()) != -1:  # find()方法不为-1说明匹配成功
                     self.item_other.append(ele)  # 将匹配成功的元素转移到对应变量
                     self.filename_inbrac.remove(ele)  # 删除已转移的括号内容
 
         # 重组文件名，设置分类
         filename_usetorecomb = input_filename
-        remove_brac = self.item_market + self.item_original + self.item_localization + self.item_other    # 整合需要删除的分类元素
+        remove_brac = self.item_market + self.item_original + self.item_localization + self.item_other  # 整合需要删除的分类元素
         for i in remove_brac:
             filename_usetorecomb = filename_usetorecomb.replace(i, "")  # 替换相关括号元素
             filename_usetorecomb = filename_usetorecomb.strip()  # 清除两端多余空格
             filename_usetorecomb = filename_usetorecomb.replace("  ", " ")  # 2个空格变1个空额清除多余空格
         if zip_check:  # 上述方法无法清除带后缀的文件 后缀与文件名之间的空格
             if filename_usetorecomb.find(" .", -5) != -1:
-                filename_usetorecomb = filename_usetorecomb[:-5] + filename_usetorecomb[-5:].replace(" .", ".")  # 切片替换 .去除多余空格
+                filename_usetorecomb = filename_usetorecomb[:-5] + filename_usetorecomb[-5:].replace(" .",
+                                                                                                     ".")  # 切片替换 .去除多余空格
 
         # 对照标准化文件名格式，对文件名进行元素的删改
         if zip_check:
-            filename_usetorecomb_delzip = os.path.splitext(filename_usetorecomb)[0]    # splitext分离后缀
-            filename_usetorecomb_suffix = os.path.splitext(filename_usetorecomb)[1]    # splitext提取后缀
+            filename_usetorecomb_delzip = os.path.splitext(filename_usetorecomb)[0]  # splitext分离后缀
+            filename_usetorecomb_suffix = os.path.splitext(filename_usetorecomb)[1]  # splitext提取后缀
             for i in self.standard_model:
                 if i == "[社团名(作者名)]标题":
                     self.filename_standard = self.filename_standard + " " + filename_usetorecomb_delzip
@@ -253,7 +254,8 @@ class DoujinshiRename:
         self.filename_standard = self.filename_standard.strip()  # 清除两端多余空格
         self.filename_standard = self.filename_standard.replace("  ", " ")  # 2个空格变1个空额清除多余空格
         if self.filename_standard.find(" .", -5) != -1:
-            self.filename_standard = self.filename_standard[:-5] + self.filename_standard[-5:].replace(" .", ".")  # 切片替换 .去除多余空格
+            self.filename_standard = self.filename_standard[:-5] + self.filename_standard[-5:].replace(" .",
+                                                                                                       ".")  # 切片替换 .去除多余空格
 
     """模块3
     将已经处理过的元素、文件名写入xlsx"""
@@ -261,7 +263,7 @@ class DoujinshiRename:
     def run_rename_check(self):
         """重组文件名，设置分类"""
         # 数据写入xlsx
-        self.xlsx_create()      # 首先执行之前编写的创建xlsx的函数
+        self.xlsx_create()  # 首先执行之前编写的创建xlsx的函数
         wb = load_workbook("改名测试.xlsx")
         ws = wb.active
         max_row = ws.max_row
@@ -269,8 +271,9 @@ class DoujinshiRename:
             ai = "A" + str(i)
             filename_oringinal = ws[ai].value  # 赋值于变量，用于后续操作
             self.assort(filename_oringinal)  # 执行模块2进行分类
-            ws["B1"], ws["C1"], ws["D1"], ws["E1"], ws["F1"] = "标准化文件名", "即卖会名", "原作名", "汉化", "其他信息"    # 添加标题
-            bi, ci, di, ei, fi = "B" + str(i), "C" + str(i), "D" + str(i), "E" + str(i), "F" + str(i)    # 建立单元格编号
+            ws["B1"], ws["C1"], ws["D1"], ws["E1"], ws[
+                "F1"] = "标准化文件名", "即卖会名", "原作名", "汉化", "其他信息"  # 添加标题
+            bi, ci, di, ei, fi = "B" + str(i), "C" + str(i), "D" + str(i), "E" + str(i), "F" + str(i)  # 建立单元格编号
             if filename_oringinal == self.filename_standard:  # 如果新文件名和原文件名相同，清空数据
                 ws[bi], ws[ci], ws[di], ws[ei], ws[fi] = "", "", "", "", ""
             else:  # 如果不同，则写入数据
@@ -303,7 +306,7 @@ class DoujinshiRename:
         import shutil
         newname = "改名测试 " + str(datetime.datetime.now())[:-7].replace(':', '.') + ".xlsx"
         p = os.getcwd()  # 获取当前路径
-        shutil.copy2("改名测试.xlsx", p + "\\config_backup\\" + newname)     # 调用shutil模块的方法复制文件
+        shutil.copy2("改名测试.xlsx", p + "\\config_backup\\" + newname)  # 调用shutil模块的方法复制文件
         self.ui.text_info.insertPlainText("\n" + self.get_time() + "已备份测试文件")
 
         n = 0  # 用于统计改名操作的次数
@@ -315,9 +318,10 @@ class DoujinshiRename:
             bi = "B" + str(i)
             if ws[bi].value:  # 判断新文件名是否为空，不为空则执行改名
                 os.rename(self.path + "/" + ws[ai].value, self.path + "/" + ws[bi].value)
-                self.ui.text_info.insertPlainText("\n"*2 + self.get_time() + "执行改名： " + ws[ai].value + " >>> " + ws[bi].value)
+                self.ui.text_info.insertPlainText(
+                    "\n" * 2 + self.get_time() + "执行改名： " + ws[ai].value + " >>> " + ws[bi].value)
                 n += 1  # 统计操作次数
-        self.ui.text_info.insertPlainText("\n"*2 + self.get_time() + "已完成全部改名操作，共执行" + str(n) + "次")
+        self.ui.text_info.insertPlainText("\n" * 2 + self.get_time() + "已完成全部改名操作，共执行" + str(n) + "次")
 
     def back_standard(self):
         """撤销改名"""
@@ -455,11 +459,11 @@ class DoujinshiRename:
 
 def main():
     app = QApplication()
-    #app.setStyle('Fusion')
+    # app.setStyle('Fusion')
     doujinshirename = DoujinshiRename()
     doujinshirename.ui.show()
     app.exec_()
 
+
 if __name__ == "__main__":
     main()
-    
