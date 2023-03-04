@@ -8,7 +8,7 @@ import datetime
 import sys
 import shutil
 from natsort import natsorted
-from pypinyin import lazy_pinyin
+import random
 
 
 class Quickmove:
@@ -141,28 +141,9 @@ class Quickmove:
                 self.folders.append(total_path)
             else:
                 self.files.append(total_path)
-        # 下面代码创建字典，文件名与其大写文件名对应，排序后再变回去，去除大小写影响
-        files_dict = {}
-        files_upper = []
-        files_reup = []
-        for i in self.files:
-            files_dict["".join(lazy_pinyin(i.upper()))] = i     # 先全转大写，在利用pypinyin将汉字转拼音并连接起来
-            files_upper.append("".join(lazy_pinyin(i.upper()))) # 将转换后的结果放到一个单独的列表
-        files_upper = natsorted(files_upper)   # 使用natsorted对新列表排序，这和Windows默认排序相同，sort排序则会不一样
-        for y in files_upper:
-            files_reup.append(files_dict[y])    # 最后将新排序列表的key值和value值对应起来，得到Windows默认排序的列表
-        self.files = files_reup
 
-        folders_dict = {}
-        folders_upper = []
-        folders_reup = []
-        for i in self.folders:
-            folders_dict["".join(lazy_pinyin(i.upper()))] = i
-            folders_upper.append("".join(lazy_pinyin(i.upper())))
-        folders_upper = natsorted(folders_upper)  # 使用natsorted排序，这和Windows默认排序相同，sort排序则会不一样
-        for y in folders_upper:
-            folders_reup.append(folders_dict[y])
-        self.folders = folders_reup
+        self.files = natsorted(self.files, key=lambda x: x.lower())     # 在natsorted中加入参数使之忽略大小写影响
+        self.folders = natsorted(self.folders, key=lambda x: x.lower())  # 在natsorted中加入参数使之忽略大小写影响
 
         # 确认要移动的文件类型
         if self.select_model == "文件模式":
@@ -216,7 +197,14 @@ class Quickmove:
         if self.move_number + 1 > move_number_max:  # 确认移动到第几个文件了，是否超限了
             tkinter.messagebox.showwarning(title='注意', message='已完成全部文件的移动，点击确认将重新遍历文件')
         else:
-            shutil.move(line[self.move_number].strip(), self.paths[path_move_number])
+            move_files = os.listdir(self.paths[path_move_number])  # 检查目标文件夹下的文件，是否和要移动的文件重复
+            if os.path.split(line[self.move_number].strip())[1] in move_files:
+                new_name = os.path.splitext(line[self.move_number].strip())[0] + '【重复' + str(random.randint(1, 100)) + '】' + \
+                           os.path.splitext(line[self.move_number].strip())[1]
+                os.renames(line[self.move_number].strip(), new_name)
+                shutil.move(new_name, self.paths[path_move_number])
+            else:
+                shutil.move(line[self.move_number].strip(), self.paths[path_move_number])
             self.move_number += 1
             self.ui.label_show_file.setText(line[self.move_number])
         self.ui.text_info.insertPlainText(
@@ -224,7 +212,11 @@ class Quickmove:
                 path_move_number])
         # 是否自动打开下一个文件
         if self.ui.check_box_open_next.isChecked() == True: # 检查勾选框状态
-            os.startfile(line[self.move_number].strip())
+            if self.select_model == "文件模式":
+                os.startfile(line[self.move_number].strip())
+            elif self.select_model == "文件夹模式":
+                os.startfile(line[self.move_number].strip() + "/" + natsorted(os.listdir(line[self.move_number].strip()))[0])
+
 
     def get_time(self):
         """获取当前时间"""
