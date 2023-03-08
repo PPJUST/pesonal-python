@@ -228,6 +228,12 @@ class Quickmove(QObject):
             self.file_number_with_new_full_path.pop(self.file_number)
         else:
             self.ui.text_info.insertHtml("<font color='red' size='3'>" + "<br>" + "没有可以撤销移动的文件/文件夹" + "</font>")
+        self.ui.label_show_file.setText(os.path.split(need_moves[self.file_number])[1])  # 显示撤回的文件
+        if auto_open == "True":  # 检查勾选框状态
+            if model == 'file':
+                os.startfile(need_moves[self.file_number])
+            elif model == 'folder':
+                os.startfile(need_moves[self.file_number] + "/" + natsorted(os.listdir(need_moves[self.file_number]))[0])  # 如果是文件夹则打开文件夹里面的第一个文件
 
     def auto_new_path_input_save(self):
         """手工输入文件路径后自动更新配置文件"""
@@ -303,7 +309,6 @@ class Quickmove(QObject):
             list_files_py.append(i_py)  # 挪到新列表里处理
             dict_files_py[i_py] = i  # key-转小写拼音 value-原名
         list_files_py = natsorted(list_files_py)
-        print(list_files_py)
         for i_py in list_files_py:  # 将拼音返回原名
             list_files_new.append(dict_files_py[i_py])
         self.files = list_files_new  # 将最后的排序结果赋值
@@ -312,7 +317,6 @@ class Quickmove(QObject):
             list_folders_py.append(i_py)  # 挪到新列表里处理
             dict_folders_py[i_py] = i  # key-转小写拼音 value-原名
         list_folders_py = natsorted(list_folders_py)
-        print(list_folders_py)
         for i_py in list_folders_py:  # 将拼音返回原名
             list_folders_new.append(dict_folders_py[i_py])
         self.folders = list_folders_new  # 将最后的排序结果赋值
